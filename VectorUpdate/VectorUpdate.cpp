@@ -10,16 +10,7 @@ public:
         m_capasity = 10;
 
     }
-   /* MyVector(const MyVector<T>& vect) {
-        m_size = vect.m_size;
-        push_capacity(m_size);
-        m_buffer = new T[m_capasity];
-        for (size_t i = 0; i < m_size; i++)
-        {
-            m_buffer[i] = vect.m_buffer[i];
-        }
-    }
-    */
+  
     MyVector(MyVector<T>&& vect) {
         m_size = vect.m_size;
         m_capasity = vect.m_capasity;
@@ -28,9 +19,6 @@ public:
         {
             m_buffer[i] = vect.m_buffer[i];
         }
-       // vect.m_size=0;
-       // vect.m_capasity=0;
-       // delete[] vect.m_buffer;
     }
     ~MyVector() {
         if (m_buffer) {
@@ -69,6 +57,28 @@ public:
         }
         delete[] buffer;
 
+    }
+    void EmplaceBack(T&& value) {
+        m_size++;
+        T* buffer;
+        if (m_size > m_capasity) {
+            push_capacity(m_size);
+
+        }
+
+        buffer = new T[m_size];
+        for (size_t i = 0; i < m_size - 1; i++)
+        {
+            buffer[i] = m_buffer[i];
+        }
+        buffer[m_size - 1] =std::move(value);
+        delete[] m_buffer;
+        m_buffer = new T[m_capasity];
+        for (size_t i = 0; i < m_size; i++)
+        {
+            m_buffer[i] = std::move(buffer[i]);
+        }
+        delete[] buffer;
     }
     MyVector& operator=(MyVector&& vect)
     {
@@ -175,7 +185,9 @@ int main()
     MyVector<int> b;
     b = std::move(a);
     MyVector<int> d(std::move(a));
-
+    MyVector<String>e;
+    e.EmplaceBack("Hello");
+   
 
 
 
