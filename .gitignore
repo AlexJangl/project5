@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# own configs
+*.filters
+*.user
+.vs/
+Debug/
+Release/
