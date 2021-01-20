@@ -8,7 +8,7 @@ public:
         m_size = 0;
         m_buffer = 0;
         m_capasity = 10;
-
+        m_buffer = new T[m_capasity];
     }
   
     MyVector(MyVector<T>&& vect) {
@@ -17,7 +17,7 @@ public:
         m_buffer = new T[m_capasity];
         for (size_t i = 0; i < m_size; i++)
         {
-            m_buffer[i] = vect.m_buffer[i];
+            m_buffer[i] = std::move(vect.m_buffer[i]);
         }
     }
     ~MyVector() {
@@ -33,52 +33,30 @@ public:
         else {
             m_capasity = size * 1.3;
         }
-    }
-
-    void push_back(const T& value) {
-        m_size++;
-        T* buffer;
-        if (m_size > m_capasity) {
-            push_capacity(m_size);
-
-        }
-
-        buffer = new T[m_size];
-        for (size_t i = 0; i < m_size - 1; i++)
-        {
-            buffer[i] = m_buffer[i];
-        }
-        buffer[m_size - 1] = value;
-        delete[] m_buffer;
-        m_buffer = new T[m_capasity];
-        for (size_t i = 0; i < m_size; i++)
-        {
-            m_buffer[i] = buffer[i];
-        }
-        delete[] buffer;
-
-    }
-    void EmplaceBack(T&& value) {
-        m_size++;
-        T* buffer;
-        if (m_size > m_capasity) {
-            push_capacity(m_size);
-
-        }
-
-        buffer = new T[m_size];
-        for (size_t i = 0; i < m_size - 1; i++)
-        {
-            buffer[i] = m_buffer[i];
-        }
-        buffer[m_size - 1] =std::move(value);
-        delete[] m_buffer;
+        auto buffer = m_buffer;
         m_buffer = new T[m_capasity];
         for (size_t i = 0; i < m_size; i++)
         {
             m_buffer[i] = std::move(buffer[i]);
         }
         delete[] buffer;
+    }
+
+    void push_back(const T& value) {
+        m_size++;
+        if (m_size > m_capasity) {
+            push_capacity(m_size);
+        }
+        m_buffer[m_size - 1] = value;
+    }
+    template<typename... U>
+    void EmplaceBack(U&&... value) {
+        m_size++;
+        if (m_size > m_capasity) {
+            push_capacity(m_size);
+
+        }
+        new (&m_buffer[m_size - 1]) T(std::forward<U>(value)...);
     }
     MyVector& operator=(MyVector&& vect)
     {
@@ -87,7 +65,7 @@ public:
         m_buffer = new T[m_capasity];
         for (size_t i = 0; i < m_size; i++)
         {
-            m_buffer[i] = vect.m_buffer[i];
+            m_buffer[i] = std::move(vect.m_buffer[i]);
         }
         return *this;
     }
@@ -117,6 +95,14 @@ public:
         m_size = strlen(str) + 1;
         m_string = new char[m_size];
         strcpy_s(m_string, m_size, str);
+    }
+
+    String(const char* str, size_t true_size)
+    {
+        std::cout << "String(const char *const c_string)\n";
+        m_size = true_size+1;
+        m_string = new char[m_size];
+        strcpy_s(m_string, true_size, str);
     }
 
     String(const String& other)
@@ -173,22 +159,23 @@ private:
     char* m_string = nullptr;
     size_t m_size;
 };
+/*template<typename T, typename... Args>
 
+T make_unique(Args&&... args)
+{
+    return T(std::forward<Args>(args)...);
+}*/
 
 
 int main()
 {
-    MyVector<int> a;
-    a.push_back(1);
-    a.push_back(2);
-    a.push_back(3);
-    MyVector<int> b;
-    b = std::move(a);
-    MyVector<int> d(std::move(a));
+    
     MyVector<String>e;
+    String e1("Hello");
     e.EmplaceBack("Hello");
+    e.EmplaceBack("Hello vars", 12);
    
-
+    //auto string = make_unique<String>("Hello, vars", 6);
 
 
 }
