@@ -1,4 +1,6 @@
 ﻿#include <iostream>
+#include <typeinfo>	
+#include <cstring>	
 template <class T>
 class MyVector {
 public:
@@ -85,63 +87,90 @@ private:
     size_t m_capasity;
     T* m_buffer;
 };
+template <class T>
 class String
 {
 public:
+    typedef T* iterator;
+
     String() {}
-    String(const char* str)
-    {
-        std::cout << "String(const char *const c_string)\n";
-        m_size = strlen(str) + 1;
-        m_string = new char[m_size];
-        strcpy_s(m_string, m_size, str);
+    String(const char* var)
+    {      
+       m_size = strlen(var) + 1;
+       m_var = new char[m_size];
+       strcpy_s(m_var, m_size, var);      
     }
 
-    String(const char* str, size_t true_size)
+    String(const T* var, size_t true_size)
     {
+        std::string typeT = "char";
         std::cout << "String(const char *const c_string)\n";
-        m_size = true_size+1;
-        m_string = new char[m_size];
-        strcpy_s(m_string, true_size, str);
+        if (typeid(T).name() == typeT) {
+            m_size = true_size + 1;
+            m_var = new T[m_size];
+            
+        }
+        else
+        {
+            m_size = true_size;
+            m_var = new T[m_size];
+            
+        }
+        for (size_t i = 0; i < m_size; i++)
+        {
+            m_var[i] = var[i];
+        }
     }
 
     String(const String& other)
     {
         std::cout << "String(const String& other)\n";
-        m_string = new char[other.m_size];
-        strcpy_s(m_string, other.m_size, other.m_string);
+        m_var = new T[other.m_size];
+        for (size_t i = 0; i < other.m_size; i++)
+        {
+            m_var[i] = other.m_var[i];
+        }
         m_size = other.m_size;
     }
     String(String&& other)
     {
         std::cout << " String(String&& other)\n";
-        m_string = other.m_string;
+        for (size_t i = 0; i < other.m_size; i++)
+        {
+            m_var[i] = other.m_var[i];
+        }
         m_size = other.m_size;
-        other.m_string = nullptr;
+        other.m_var = nullptr;
         other.m_size = 0;
     }
     String& operator=(const String& other)
     {
         std::cout << " operator=(const String& other)\n";
-        m_string = new char[other.m_size];
-        strcpy_s(m_string, other.m_size, other.m_string);
+        m_var = new T[other.m_size];
+        for (size_t i = 0; i <other.m_size; i++)
+        {
+            m_var[i] = other.m_var[i];
+        }
         m_size = other.m_size;
         return *this;
     }
     String& operator=(String&& other)
     {
         std::cout << " operator=(String&& other)\n";
-        m_string = other.m_string;
+        for (size_t i = 0; i < other.m_size; i++)
+        {
+            m_var[i] = other.m_var[i];
+        }
         m_size = other.m_size;
-        other.m_string = nullptr;
+        other.m_var = nullptr;
         other.m_size = 0;
         return *this;
     }
     String& operator+(const String& other) {
-        char* tmpStr = m_string;
-        m_string = new char[m_size + other.m_size];
-        strcpy_s(m_string, m_size, tmpStr);
-        strcpy_s(m_string + m_size - 1, other.m_size, other.m_string);
+        char* tmpStr = m_var;
+        m_var = new T[m_size + other.m_size];
+        strcpy_s(m_var, m_size, tmpStr);
+        strcpy_s(m_var + m_size - 1, other.m_size, other.m_var);
         delete[] tmpStr;
         m_size += other.m_size;
         return *this;
@@ -149,34 +178,29 @@ public:
     ~String() noexcept
     {
         std::cout << " ~String()\n";
-        if (m_string) {
-            delete[] m_string;
-            m_string = nullptr;
+        if (m_var) {
+            delete[] m_var;
+            m_var = nullptr;
         }
     }
 
 private:
-    char* m_string = nullptr;
+    T* m_var = nullptr;
     size_t m_size;
 };
-/*template<typename T, typename... Args>
-
-T make_unique(Args&&... args)
-{
-    return T(std::forward<Args>(args)...);
-}*/
 
 
 int main()
 {
     
-    MyVector<String>e;
-    String e1("Hello");
-    e.EmplaceBack("Hello");
-    e.EmplaceBack("Hello vars", 12);
-   
-    //auto string = make_unique<String>("Hello, vars", 6);
-
-
+    MyVector<String<char>>vectChar;
+    MyVector<String<int>>vectInt;
+    String<char> strChar("Hello");
+    int mas[] = { 1, 2 };
+    String<int> strInt(mas, 2);
+    vectChar.EmplaceBack("Hello vars", 12);
+    vectInt.EmplaceBack(strInt);
+    String<int> strInt1(mas, 2);
+    vectInt.EmplaceBack(strInt1);
 }
 
